@@ -79,13 +79,26 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
 }
 
 char* getRemoteUserIP(){ /* Returns a validated IPv4 that the User wants to connect to */
-    printf("Please Input the remote IPv4: ");
-    char* RemoteUserIP = malloc(16 * sizeof(char));
-    scanf_s("%s", RemoteUserIP, 16);
-    if (validate_ip(RemoteUserIP) != 1){
-        printf("ERROR: something is wrong with this IPv4: %c", *RemoteUserIP);
-    }
-    return RemoteUserIP;
+    int valid = 0;
+    char RemoteUserIP[16];
+    int Attempts = 1;
+    do {
+        {
+            printf(Attempts == 1 ? "Please Input the remote IPv4: " : "\nPlease Input the remote IPv4: ");
+            Attempts++;
+        }
+        scanf_s("%s", RemoteUserIP, 16);
+        if (validate_ip(RemoteUserIP) == 1){
+            valid = 1;
+        }
+    } while (valid != 1);
+    printf("DBG: getRemoteUserIP(), returning: ");
+    printf("%s", RemoteUserIP);
+    char* h_RemoteUserIP = malloc(16 * sizeof(char*));
+    h_RemoteUserIP = RemoteUserIP;
+    //TODO Bug, entering a wrong IP will display its wrong but program will crash after a few seconds...
+    //TODO Goal: Return correct on heap allocated IPv4 Addr |, current Problem is program will return the wrong IPv4 too...
+    return h_RemoteUserIP;
 }
 
 static void InitConnection(){

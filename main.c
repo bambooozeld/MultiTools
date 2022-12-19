@@ -26,7 +26,7 @@ void Init() {
         printf("2 - File Transfer App\n");
         printf("3 - Placeholder App\n");
 
-        printf("\nPlease choose which of the above programs, you want to run, input the number: ");
+        printf("\nPlease choose which of the above programs, you want to run, enter the number: ");
 
         if (fgets(input, sizeof(input), stdin) == NULL) {
             // Handle error or EOF
@@ -48,6 +48,9 @@ void Init() {
             break;
         }
         printf("Invalid input. Please try again.\n");
+        printf("(Restarting)...");
+        Sleep(2500);
+        ClearScreen();
     }
 
     switch (*ptr_input) {
@@ -66,7 +69,7 @@ void Init() {
             break;
     }
 }
-
+//TODO: Make a array that stores all on heap allocated variables and free at the end?
 void Chat(){
     ChatMain();
 }
