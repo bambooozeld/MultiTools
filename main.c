@@ -17,7 +17,7 @@ int main() {
 void Init() {
 
     char input[10];
-    int *ptr_input = NULL;
+    int *ptr_input = malloc(sizeof(int));
 
     while (1) {
         printf("Multi-Use App\n");
@@ -44,10 +44,12 @@ void Init() {
         char *end_ptr = 0;
         long int num = strtol(input, &end_ptr, 10);
         if (num == 1 || num == 2 || num == 3) {
+            *ptr_input = (int)num;
             break;
         }
         printf("Invalid input. Please try again.\n");
     }
+
     switch (*ptr_input) {
         case 1:
             Chat();
@@ -72,7 +74,6 @@ void Chat(){
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 void ClearScreen()
 {
     HANDLE                     hStdOut;

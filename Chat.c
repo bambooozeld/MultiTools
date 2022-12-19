@@ -70,7 +70,7 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
     if (octet_count != 4 || dot_count != 3)
     {
         printf("Invalid IPv4 address: incorrect number of octets or dots\n");
-        return 1;
+        return 0;
     }
 
     // Input is a valid IPv4 address
@@ -78,12 +78,14 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
     return 1;
 }
 
-char* getRemoteUserIP(){
+char* getRemoteUserIP(){ /* Returns a validated IPv4 that the User wants to connect to */
     printf("Please Input the remote IPv4: ");
-    char RemoteUserIP[16];
-    scanf_s("%s", RemoteUserIP, sizeof(RemoteUserIP));
-    printf("DBG: %s", RemoteUserIP);
-    return _strdup(RemoteUserIP);
+    char* RemoteUserIP = malloc(16 * sizeof(char));
+    scanf_s("%s", RemoteUserIP, 16);
+    if (validate_ip(RemoteUserIP) != 1){
+        printf("ERROR: something is wrong with this IPv4: %c", *RemoteUserIP);
+    }
+    return RemoteUserIP;
 }
 
 static void InitConnection(){
@@ -96,24 +98,20 @@ static void InitConnection(){
     if(sockD == INVALID_SOCKET)
         printf("Invalid Socket: %d", WSAGetLastError());
 
-    char *ptr_RemoteIP = getRemoteUserIP();
-    //TODO: Make InitConnection init the Connection, no validation should be done here, that should be already done before this function is called
-    if (validate_ip(ptr_RemoteIP) != 1) {
-        printf("ERROR: invalid IP Address?");
-    } else{
-        struct sockaddr_in servAddr;
-        servAddr.sin_addr.s_addr = *ptr_RemoteIP;
-        servAddr.sin_family = AF_INET;
-        servAddr.sin_port = htons(4444);
+    char *p_RemoteIP = getRemoteUserIP();
 
-        int connectStatus = connect(sockD, (struct sockaddr*)&servAddr, sizeof(servAddr));
-        if (connectStatus == -1) {
-            printf("Error...\n");
-        }
-        else {
-            char strData[255];
-            recv(sockD, strData, sizeof(strData), 0);
-            printf("Message: %s\n", strData);
-        }
+    struct sockaddr_in servAddr;
+    servAddr.sin_addr.s_addr = (unsigned long) (unsigned char) (*p_RemoteIP);
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_port = htons(4444);
+
+    int connectStatus = connect(sockD, (struct sockaddr*)&servAddr, sizeof(servAddr));
+    if (connectStatus == -1) {
+        printf("Error...\n");
+    }
+    else {
+        char strData[255];
+        recv(sockD, strData, sizeof(strData), 0);
+        printf("Message: %s\n", strData);
     }
 }
