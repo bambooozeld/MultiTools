@@ -1,11 +1,8 @@
 //
-// Created by Admin on 11.12.2022.
+// Created by Admin on 21.12.2022.
 //
 
-#ifndef CHATAPP_CHAT_H
-#define CHATAPP_CHAT_H
+#ifndef MULTITOOLS_CHAT_H
+#define MULTITOOLS_CHAT_H
 int ChatMain();
-#endif //CHATAPP_CHAT_H
-
-
-
+#endif //MULTITOOLS_CHAT_H

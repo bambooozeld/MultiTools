@@ -1,2 +1,5 @@
-*Bug Fixes*
+*BugFixes and Changelog*
 
+-Fixed a bug where if entered a IPv4 in wrong format it crashed the program
+-Fixed a bug where wrong IPv4 was still used even though it should've been discarded
+-Changed compiler and added needed compiler flags

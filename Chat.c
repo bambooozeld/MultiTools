@@ -3,7 +3,7 @@
 #include "Chat.h"
 #include <stdlib.h>
 
-#pragma comment(lib,"ws2_32.lib")
+
 
 static void InitChat();
 static void InitConnection();
@@ -44,7 +44,7 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
             if (octet < 0 || octet > 255)
             {
                 printf("Invalid IPv4 address: octet out of range\n");
-                return 1;
+                return 0;
             }
 
             // Skip over any subsequent digits in the octet
@@ -62,7 +62,7 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
         {
             // Invalid character in the input
             printf("Invalid IPv4 address: invalid character\n");
-            return 1;
+            return 0;
         }
     }
 
@@ -92,13 +92,15 @@ char* getRemoteUserIP(){ /* Returns a validated IPv4 that the User wants to conn
             valid = 1;
         }
     } while (valid != 1);
-    printf("DBG: getRemoteUserIP(), returning: ");
-    printf("%s", RemoteUserIP);
-    char* h_RemoteUserIP = malloc(16 * sizeof(char*));
-    h_RemoteUserIP = RemoteUserIP;
-    //TODO Bug, entering a wrong IP will display its wrong but program will crash after a few seconds...
-    //TODO Goal: Return correct on heap allocated IPv4 Addr |, current Problem is program will return the wrong IPv4 too...
-    return h_RemoteUserIP;
+
+    char* ptrRemoteUserIP = malloc(16 * sizeof(char));
+    ptrRemoteUserIP = (char *) atoi(RemoteUserIP);
+    printf("*ptrRemoteUserIP");
+    printf("%d",*ptrRemoteUserIP);
+    return ptrRemoteUserIP;
+
+
+    //TODO Goal: Return correct on heap allocated IPv4 Addr
 }
 
 static void InitConnection(){

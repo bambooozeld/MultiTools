@@ -2,8 +2,6 @@
 #include <windows.h>
 #include "Chat.h"
 
-#pragma comment(lib,"ws2_32.lib")
-
 
 void Chat();
 void Init();
