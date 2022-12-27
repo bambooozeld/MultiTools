@@ -7,6 +7,8 @@
 
 static void InitChat();
 static void InitConnection();
+static void BuildServer();
+static void BuildOrReceiveConn();
 
 int ChatMain(){
     printf("Starting Chat App...\n");
@@ -17,17 +19,21 @@ int ChatMain(){
 }
 
 static void InitChat(){
-    InitConnection();
+    BuildOrReceiveConn();
 }
 
-int validate_number(char * str) {
-    while ( * str) {
-        if (!isdigit( * str)) { //if the character is not a number, return false
-            return 0;
-        }
-        str++; //point to next character
-    }
-    return 1;
+static void BuildOrReceiveConn(){
+    printf("Would you like to initiate(0) a connection or receive(1) a connection? (0/1)?\n");
+    printf("Input: ");
+    int *BuildOrReceiveConn = NULL;
+    scanf_s("%d", BuildOrReceiveConn, 10);
+    if (*BuildOrReceiveConn != 0) {
+        if (*BuildOrReceiveConn != 0 && *BuildOrReceiveConn != 1) {
+            printf("Wrong Input!");
+            exit(0);
+        } else if (*BuildOrReceiveConn == 1)
+            BuildServer();
+    } else InitConnection();
 }
 
 int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
@@ -78,10 +84,11 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
     return 1;
 }
 
-char* getRemoteUserIP(){ /* Returns a validated IPv4 that the User wants to connect to */
+unsigned long getRemoteUserIP(){
     int valid = 0;
     char RemoteUserIP[16];
     int Attempts = 1;
+    unsigned long RemoteIP;
     do {
         {
             printf(Attempts == 1 ? "Please Input the remote IPv4: " : "\nPlease Input the remote IPv4: ");
@@ -93,14 +100,13 @@ char* getRemoteUserIP(){ /* Returns a validated IPv4 that the User wants to conn
         }
     } while (valid != 1);
 
-    char* ptrRemoteUserIP = malloc(16 * sizeof(char));
-    ptrRemoteUserIP = (char *) atoi(RemoteUserIP);
-    printf("*ptrRemoteUserIP");
-    printf("%d",*ptrRemoteUserIP);
-    return ptrRemoteUserIP;
+    RemoteIP = inet_addr(RemoteUserIP);
 
-
-    //TODO Goal: Return correct on heap allocated IPv4 Addr
+    printf("Do you want to build a connection with %ld ? (y/n) ", RemoteIP);
+    char initConnectionCheck;
+    scanf_s("%c", initConnectionCheck, 4);
+    initConnectionCheck == 'n' ? exit(0) : printf("Ok");
+    return RemoteIP;
 }
 
 static void InitConnection(){
@@ -113,10 +119,10 @@ static void InitConnection(){
     if(sockD == INVALID_SOCKET)
         printf("Invalid Socket: %d", WSAGetLastError());
 
-    char *p_RemoteIP = getRemoteUserIP();
+    unsigned long RemoteIP = getRemoteUserIP();
 
     struct sockaddr_in servAddr;
-    servAddr.sin_addr.s_addr = (unsigned long) (unsigned char) (*p_RemoteIP);
+    servAddr.sin_addr.s_addr = RemoteIP;
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(4444);
 

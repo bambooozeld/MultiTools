@@ -67,7 +67,6 @@ void Init() {
             break;
     }
 }
-//TODO: Make a array that stores all on heap allocated variables and free at the end?
 void Chat(){
     ChatMain();
 }
