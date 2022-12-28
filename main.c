@@ -40,7 +40,7 @@ void Init() {
         input[strlen(input) - 1] = '\0';
         // Convert the input string to an integer
         char *end_ptr = 0;
-        long int num = strtol(input, &end_ptr, 10);
+        long num = strtol(input, &end_ptr, 10);
         if (num == 1 || num == 2 || num == 3) {
             *ptr_input = (int)num;
             break;

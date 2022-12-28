@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <winsock2.h>
 #include "Chat.h"
+#include "Logger.h"
 #include <stdlib.h>
+#include <time.h>
 
 
 
@@ -9,13 +11,30 @@ static void InitChat();
 static void InitConnection();
 static void BuildServer();
 static void BuildOrReceiveConn();
+static void ChatLogFileForCurrentInstance();
 
 int ChatMain(){
     printf("Starting Chat App...\n");
+    ChatLogFileForCurrentInstance();
     Sleep(2500);
     printf(" --> Done\n");
     InitChat();
     return 0;
+}
+
+static void ChatLogFileForCurrentInstance(){
+    #define BUFFER_SIZE 2500
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    char * firstPart = "\nChat App, ";
+    char * time = asctime(timeinfo);
+    char * firstInitialLogToFile;
+    strcpy(firstInitialLogToFile, firstPart);
+    strcat(firstInitialLogToFile, time);
+    LogMessage(firstInitialLogToFile);
 }
 
 static void InitChat(){
@@ -25,13 +44,13 @@ static void InitChat(){
 static void BuildOrReceiveConn(){
     printf("Would you like to initiate(0) a connection or receive(1) a connection? (0/1)?\n");
     printf("Input: ");
-    int *BuildOrReceiveConn = NULL;
+    int *BuildOrReceiveConnInput = NULL;
     scanf_s("%d", BuildOrReceiveConn, 10);
-    if (*BuildOrReceiveConn != 0) {
-        if (*BuildOrReceiveConn != 0 && *BuildOrReceiveConn != 1) {
+    if (*BuildOrReceiveConnInput != 0) {
+        if (*BuildOrReceiveConnInput != 0 && *BuildOrReceiveConnInput != 1) {
             printf("Wrong Input!");
             exit(0);
-        } else if (*BuildOrReceiveConn == 1)
+        } else if (*BuildOrReceiveConnInput == 1)
             BuildServer();
     } else InitConnection();
 }
@@ -84,11 +103,11 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
     return 1;
 }
 
-unsigned long getRemoteUserIP(){
+u_long getRemoteUserIP(){
     int valid = 0;
     char RemoteUserIP[16];
     int Attempts = 1;
-    unsigned long RemoteIP;
+    u_long RemoteIP;
     do {
         {
             printf(Attempts == 1 ? "Please Input the remote IPv4: " : "\nPlease Input the remote IPv4: ");
@@ -109,6 +128,10 @@ unsigned long getRemoteUserIP(){
     return RemoteIP;
 }
 
+static void BuildServer(){
+
+}
+
 static void InitConnection(){
     WSADATA wsa;
     SOCKET sockD;
@@ -119,7 +142,7 @@ static void InitConnection(){
     if(sockD == INVALID_SOCKET)
         printf("Invalid Socket: %d", WSAGetLastError());
 
-    unsigned long RemoteIP = getRemoteUserIP();
+    u_long RemoteIP = getRemoteUserIP();
 
     struct sockaddr_in servAddr;
     servAddr.sin_addr.s_addr = RemoteIP;
