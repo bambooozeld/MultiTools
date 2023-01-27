@@ -17,7 +17,7 @@ int ChatMain(){
     printf("Starting Chat App...\n");
     ChatLogFileForCurrentInstance();
     Sleep(2500);
-    printf(" --> Done\n");
+    printf(" --> Done loading Chat App\n");
     InitChat();
     return 0;
 }
@@ -34,7 +34,7 @@ static void ChatLogFileForCurrentInstance(){
     char * firstInitialLogToFile;
     strcpy(firstInitialLogToFile, firstPart);
     strcat(firstInitialLogToFile, time);
-    LogMessage(firstInitialLogToFile);
+    LogMessageAppend(firstInitialLogToFile);
 }
 
 static void InitChat(){
@@ -42,15 +42,15 @@ static void InitChat(){
 }
 
 static void BuildOrReceiveConn(){
-    printf("Would you like to initiate(0) a connection or receive(1) a connection? (0/1)?\n");
+    int BuildOrReceiveConnInput;
+    printf("Would you like to initiate(0) a connection or receive(1) a connection? (0/1)\n");
     printf("Input: ");
-    int *BuildOrReceiveConnInput = NULL;
-    scanf_s("%d", BuildOrReceiveConn, 10);
-    if (*BuildOrReceiveConnInput != 0) {
-        if (*BuildOrReceiveConnInput != 0 && *BuildOrReceiveConnInput != 1) {
+    scanf_s("%d", &BuildOrReceiveConnInput, 2);
+    if (BuildOrReceiveConnInput != 0) {
+        if (BuildOrReceiveConnInput != 1) {
             printf("Wrong Input!");
             exit(0);
-        } else if (*BuildOrReceiveConnInput == 1)
+        } else if (BuildOrReceiveConnInput == 1)
             BuildServer();
     } else InitConnection();
 }
@@ -114,8 +114,13 @@ u_long getRemoteUserIP(){
             Attempts++;
         }
         scanf_s("%s", RemoteUserIP, 16);
-        if (validate_ip(RemoteUserIP) == 1){
-            valid = 1;
+        if (strcmp(RemoteUserIP, "") == 0){
+            printf("Invalid IPv4 address: invalid character or empty\n");
+        }
+        else{
+            if (validate_ip(RemoteUserIP) == 1) {
+                valid = 1;
+            }
         }
     } while (valid != 1);
 
