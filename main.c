@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "Chat.h"
+#include "Logger.h"
 
 
 void Chat();

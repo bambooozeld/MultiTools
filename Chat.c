@@ -3,8 +3,6 @@
 #include "Chat.h"
 #include "Logger.h"
 #include <stdlib.h>
-#include <time.h>
-
 
 
 static void InitChat();
@@ -12,29 +10,26 @@ static void InitConnection();
 static void BuildServer();
 static void BuildOrReceiveConn();
 static void ChatLogFileForCurrentInstance();
+char* GetTime();
 
 int ChatMain(){
     printf("Starting Chat App...\n");
     ChatLogFileForCurrentInstance();
-    Sleep(2500);
+    Sleep(2500); // for realism
     printf(" --> Done loading Chat App\n");
     InitChat();
     return 0;
 }
 
 static void ChatLogFileForCurrentInstance(){
-    #define BUFFER_SIZE 2500
-    time_t rawtime;
-    struct tm * timeinfo;
-
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
-    char * firstPart = "\nChat App, ";
-    char * time = asctime(timeinfo);
+    char ChatApp_LoadUp_Text[] = "Chat App loaded...";
+    unsigned __int64 ChatApp_LoadUp_Size = strlen(ChatApp_LoadUp_Text);
+    char ChatApp_LoadUp[ChatApp_LoadUp_Size];
     char * firstInitialLogToFile;
-    strcpy(firstInitialLogToFile, firstPart);
-    strcat(firstInitialLogToFile, time);
-    LogMessageAppend(firstInitialLogToFile);
+    char * time = GetTime();
+    strcpy(firstInitialLogToFile, ChatApp_LoadUp_Text);
+    char * msg = strcat(time, ChatApp_LoadUp_Text);
+    LogMessageAppend(msg);
 }
 
 static void InitChat(){
