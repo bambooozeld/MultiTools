@@ -9,6 +9,7 @@ void Init();
 void ClearScreen();
 
 int main() {
+    setbuf(stdout, 0); //Needed for CLion Editor otherwise no console ouput while debugging: https://youtrack.jetbrains.com/issue/CPP-10733
     Init();
     return 0;
 }

@@ -7,75 +7,34 @@
 #include <windows.h>
 #include <dirent.h>
 #include <errno.h>
-#include <time.h>
+#include <string.h>
 
-char* GetTime();
+BOOL DirectoryExists(LPCTSTR szPath)
+{
+    DWORD dwAttrib = GetFileAttributes(szPath);
 
-static int GenAppDataLogFolder(char Path[]){ //Creates the AppData Log Folder if it does not already exist.
-    char path[MAX_PATH];
-    path[MAX_PATH] = (char) Path;
-    sprintf(path, "C:\\Users\\%s\\AppData\\Local\\MultiTools", getenv("USERNAME"));
-    DIR* dir = opendir(path);
-    if (dir) {
-        closedir(dir);
-    } else if (ENOENT == errno) {
-        CreateDirectory(path, NULL);
-        LogMessageAppend("Created Directory.");
-    } else {
-        if (GetLastError() == ERROR_ALREADY_EXISTS){
-            LogMessageAppend("Directory already exists.");
-        }
-        else if (GetLastError() == ERROR_PATH_NOT_FOUND){
-            LogMessageAppend("Directory Path not found.");
-        }
-        else{
-            DWORD ERR = GetLastError();
-            char * err_msg;
-            sprintf(err_msg, "%lu", ERR);
-            LogMessageAppend(err_msg);
-        }
-    }
-    return 1;
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-static void GenAppDataLogFile(char Message[]);
-void LogMessage(char Message[]){ //Log the
-    char *ParsedMessage = Message;
-    GenAppDataLogFile(ParsedMessage);
+/*static void DebugDirectory(LPCTSTR szPath)
+{
+    DWORD dwAttrib = GetFileAttributes(szPath);
+    char * Error_CAUSE = dwAttrib;
+}*/
+
+static void GenAppDataLogFolder(char path[]) //Creates the AppData Log Folder if it does not already exist.
+{
+    char *Path =  path;
+
+    if (DirectoryExists(Path) == 0) {
+        CreateDirectory(Path, NULL);
+        LogMessage("Created Directory.");
+    }
+    else { //Failed creating LogFolder
+        //DebugDirectory(Path);
+    }
 }
 
-static void Append_GenAppDataLogFile(char Message[]);
-void LogMessageAppend(char Message[]){
-    char *ParsedMessage = Message;
-    Append_GenAppDataLogFile(ParsedMessage);
-}
-
-static void Append_GenAppDataLogFile(char Message[]){ //Creates AppData Log FILE, Message will be appended to EOF
-    char _appdatapath[MAX_PATH];
-    sprintf(_appdatapath, "C:\\Users\\%s\\AppData\\Local\\MultiTools", getenv("USERNAME"));
-    char _appdatalogfilepath[MAX_PATH];
-    sprintf(_appdatalogfilepath, "C:\\Users\\%s\\AppData\\Local\\MultiTools\\log.txt", getenv("USERNAME"));
-    FILE *log_file;
-    log_file = fopen(_appdatalogfilepath, "w");
-    if(log_file == NULL)
-    {
-        printf("Something went wrong when trying to read the file.\n");
-    }
-    //Adding new line to last array position if it's not already '\n'
-    char *ParsedMessage = Message;
-    u_int len_ParsedMessage = strlen(ParsedMessage);
-    if (ParsedMessage[len_ParsedMessage] != '\n'){
-        ParsedMessage[len_ParsedMessage + 1] = '\n';
-    }
-    else{
-        //TODO: Fix file now writing to log
-        char * ParsedMessageWithTimestamp;
-        ParsedMessageWithTimestamp = GetTime();
-        strcat(ParsedMessageWithTimestamp, ParsedMessage);
-        fputs(ParsedMessageWithTimestamp, log_file);
-        fclose(log_file);
-    }
-}
 
 char * GetTime(){
     SYSTEMTIME t;
@@ -86,34 +45,19 @@ char * GetTime(){
     return time;
 }
 
-static void GenAppDataLogFile(char Message[]){
+void LogMessage(char Message[]){ //Creates Log File if not existent, content is written to the log file
+    char *username = getenv("USERNAME");
+    char *LogFolderPath = malloc(256);
+    char *LogFilePath = malloc(256);
+    sprintf(LogFolderPath, "C:\\Users\\%s\\AppData\\Local\\MultiTools", username);
+    sprintf(LogFilePath, "C:\\Users\\%s\\AppData\\Local\\MultiTools\\log.txt", username);
 
-    char _appdatapath[MAX_PATH];
-    sprintf(_appdatapath, "C:\\Users\\%s\\AppData\\Local\\Temp\\MultiTools", getenv("USERNAME"));
-    char _appdatalogfilepath[MAX_PATH];
-    sprintf(_appdatalogfilepath, "C:\\Users\\%s\\AppData\\Local\\Temp\\MultiTools\\log.txt", getenv("USERNAME"));
+    GenAppDataLogFolder(LogFolderPath);
+    FILE *file;
+    file = fopen(LogFilePath, "a");
+    fprintf(file, "\nTest");
+    fclose(file);
 
-    if (!GenAppDataLogFolder(_appdatapath)){
-        printf("Error, to create a log file, the MultiTools Folder is required...\n");
-    }
-    else{
-        FILE *file;
-        file = fopen(_appdatalogfilepath, "w");
-        if(file == NULL)
-        {
-            printf("Something went wrong when trying to read the file.\n");
-
-        }
-
-        //Adding new line to last array position if it's not already '\n'
-        char *ParsedMessage = Message;
-        u_int len_ParsedMessage = strlen(ParsedMessage);
-        if (ParsedMessage[len_ParsedMessage] != '\n'){
-            ParsedMessage[len_ParsedMessage + 1] = '\n';
-        }
-        else{
-            fputs(ParsedMessage, file);
-            fclose(file);
-        }
-    }
+    free(LogFolderPath);
+    free(LogFilePath);
 }

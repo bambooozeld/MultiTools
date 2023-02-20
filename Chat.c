@@ -10,26 +10,25 @@ static void InitConnection();
 static void BuildServer();
 static void BuildOrReceiveConn();
 static void ChatLogFileForCurrentInstance();
-char* GetTime();
 
 int ChatMain(){
     printf("Starting Chat App...\n");
     ChatLogFileForCurrentInstance();
-    Sleep(2500); // for realism
+    Sleep(2500); // for realism, for now.
     printf(" --> Done loading Chat App\n");
     InitChat();
     return 0;
 }
 
 static void ChatLogFileForCurrentInstance(){
-    char ChatApp_LoadUp_Text[] = "Chat App loaded...";
+    char ChatApp_LoadUp_Text[] = " Chat App loaded...";
     unsigned __int64 ChatApp_LoadUp_Size = strlen(ChatApp_LoadUp_Text);
     char ChatApp_LoadUp[ChatApp_LoadUp_Size];
     char * firstInitialLogToFile;
     char * time = GetTime();
     strcpy(firstInitialLogToFile, ChatApp_LoadUp_Text);
     char * msg = strcat(time, ChatApp_LoadUp_Text);
-    LogMessageAppend(msg);
+    LogMessage(msg);
 }
 
 static void InitChat(){
@@ -121,11 +120,20 @@ u_long getRemoteUserIP(){
 
     RemoteIP = inet_addr(RemoteUserIP);
 
-    printf("Do you want to build a connection with %ld ? (y/n) ", RemoteIP);
-    char initConnectionCheck;
-    scanf_s("%c", initConnectionCheck, 4);
-    initConnectionCheck == 'n' ? exit(0) : printf("Ok");
-    return RemoteIP;
+    printf("Do you want to build a connection with %lu (%s) ? (y/n) ", RemoteIP, RemoteUserIP);
+    char *initConnectionCheck = malloc(24);
+    scanf("%c", initConnectionCheck);
+
+    if (*initConnectionCheck == 'n'){
+        printf("\n");
+        RemoteIP = inet_addr(RemoteUserIP);
+    }
+    else if (*initConnectionCheck == 'y'){
+        printf("Ok");
+        free(initConnectionCheck);
+        return RemoteIP;
+    }
+    free(initConnectionCheck);
 }
 
 static void BuildServer(){
@@ -143,11 +151,14 @@ static void InitConnection(){
         printf("Invalid Socket: %d", WSAGetLastError());
 
     u_long RemoteIP = getRemoteUserIP();
+    const char * test = (const char *) &RemoteIP;
 
     struct sockaddr_in servAddr;
-    servAddr.sin_addr.s_addr = RemoteIP;
+    servAddr.sin_addr.s_addr = inet_addr(test);
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(4444);
+    printf("Done");
+    Sleep(5000);
 
     int connectStatus = connect(sockD, (struct sockaddr*)&servAddr, sizeof(servAddr));
     if (connectStatus == -1) {

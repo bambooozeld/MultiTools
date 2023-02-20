@@ -6,5 +6,4 @@
 #define MULTITOOLS_LOGGER_H
 void LogMessage(char Message[]);
 char* GetTime();
-void LogMessageAppend(char Message[]);
 #endif //MULTITOOLS_LOGGER_H
