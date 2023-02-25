@@ -5,5 +5,7 @@
 #ifndef MULTITOOLS_LOGGER_H
 #define MULTITOOLS_LOGGER_H
 void LogMessage(char Message[]);
+void LogMessageP(char * Message);
 char* GetTime();
+void SetupFunctionCodes(void);
 #endif //MULTITOOLS_LOGGER_H

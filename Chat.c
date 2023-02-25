@@ -11,35 +11,38 @@ static void BuildServer();
 static void BuildOrReceiveConn();
 static void ChatLogFileForCurrentInstance();
 
-int ChatMain(){
+int ChatMain(void){
+    SetupFunctionCodes(); //Setup Logger Function Codes
     printf("Starting Chat App...\n");
     ChatLogFileForCurrentInstance();
     Sleep(2500); // for realism, for now.
-    printf(" --> Done loading Chat App\n");
+    printf("Chat App loaded...\n");
     InitChat();
     return 0;
 }
 
-static void ChatLogFileForCurrentInstance(){
+static void ChatLogFileForCurrentInstance(void){
     char ChatApp_LoadUp_Text[] = " Chat App loaded...";
-    unsigned __int64 ChatApp_LoadUp_Size = strlen(ChatApp_LoadUp_Text);
-    char ChatApp_LoadUp[ChatApp_LoadUp_Size];
-    char * firstInitialLogToFile;
+    char *firstInitialLogToFile = ChatApp_LoadUp_Text;
     char * time = GetTime();
     strcpy(firstInitialLogToFile, ChatApp_LoadUp_Text);
     char * msg = strcat(time, ChatApp_LoadUp_Text);
     LogMessage(msg);
 }
 
-static void InitChat(){
+static void InitChat(void){
     BuildOrReceiveConn();
 }
 
-static void BuildOrReceiveConn(){
+static void BuildOrReceiveConn(void){
     int BuildOrReceiveConnInput;
+    int valid = 0;
+    int Attempts = 1;
+
     printf("Would you like to initiate(0) a connection or receive(1) a connection? (0/1)\n");
     printf("Input: ");
     scanf_s("%d", &BuildOrReceiveConnInput, 2);
+
     if (BuildOrReceiveConnInput != 0) {
         if (BuildOrReceiveConnInput != 1) {
             printf("Wrong Input!");
@@ -97,36 +100,36 @@ int validate_ip(char * RemoteUserIP) { //check whether the IP is valid or not
     return 1;
 }
 
-u_long getRemoteUserIP(){
+u_long getRemoteUserIP(void){
     int valid = 0;
     char RemoteUserIP[16];
     int Attempts = 1;
     u_long RemoteIP;
     do {
-        {
-            printf(Attempts == 1 ? "Please Input the remote IPv4: " : "\nPlease Input the remote IPv4: ");
-            Attempts++;
-        }
-        scanf_s("%s", RemoteUserIP, 16);
-        if (strcmp(RemoteUserIP, "") == 0){
-            printf("Invalid IPv4 address: invalid character or empty\n");
-        }
-        else{
-            if (validate_ip(RemoteUserIP) == 1) {
-                valid = 1;
-            }
-        }
+         //Checking Attempts for correct formatting
+         printf(Attempts == 1 ? "Please Input the remote IPv4: " : "\nPlease Input the remote IPv4: ");
+         Attempts++;
+
+         scanf_s("%s", RemoteUserIP, 16);
+         if (strcmp(RemoteUserIP, "") == 0){
+             printf("Invalid IPv4 address: invalid character or empty\n");
+         }
+         else{
+             if (validate_ip(RemoteUserIP) == 1) {
+                 valid = 1;
+             }
+         }
     } while (valid != 1);
 
     RemoteIP = inet_addr(RemoteUserIP);
 
-    printf("Do you want to build a connection with %lu (%s) ? (y/n) ", RemoteIP, RemoteUserIP);
+    printf("Do you want to build a connection with %s ? (y/n) ", RemoteUserIP);
     char *initConnectionCheck = malloc(24);
     scanf("%c", initConnectionCheck);
 
     if (*initConnectionCheck == 'n'){
         printf("\n");
-        RemoteIP = inet_addr(RemoteUserIP);
+
     }
     else if (*initConnectionCheck == 'y'){
         printf("Ok");
@@ -134,13 +137,53 @@ u_long getRemoteUserIP(){
         return RemoteIP;
     }
     free(initConnectionCheck);
+    DWORD err = 0;
+    return err;
 }
 
-static void BuildServer(){
+static void BuildServer(void){
+    WSADATA wsa;
+    SOCKET s, new_socket;
+    int c;
+    struct sockaddr_in remoteServer, client;
 
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0){
+        printf("Error Code: %d", WSAGetLastError());
+    }
+    if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
+    {
+        printf("Could not create socket : %d" , WSAGetLastError());
+    }
+    u_long RemoteIP = getRemoteUserIP();
+    if (RemoteIP == 0)
+        printf("Something went wrong getting the RemoteIP");
+
+    remoteServer.sin_family = AF_INET;
+    remoteServer.sin_addr.s_addr = INADDR_ANY;
+    remoteServer.sin_port = htons( 8888 );
+
+    if( bind(s ,(struct sockaddr *)&remoteServer , sizeof(remoteServer)) == SOCKET_ERROR)
+    {
+        printf("Bind failed with error code : %d" , WSAGetLastError());
+    }
+    listen(s,3);
+
+    puts("Waiting for incoming connections...");
+
+    c = sizeof(struct sockaddr_in);
+    new_socket = accept(s , (struct sockaddr *)&client, &c);
+    if (new_socket == INVALID_SOCKET)
+    {
+        printf("accept failed with error code : %d" , WSAGetLastError());
+    }
+
+    puts("Connection accepted");
+
+    closesocket(s);
+    WSACleanup();
 }
 
-static void InitConnection(){
+static void InitConnection(void){
     WSADATA wsa;
     SOCKET sockD;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -151,16 +194,18 @@ static void InitConnection(){
         printf("Invalid Socket: %d", WSAGetLastError());
 
     u_long RemoteIP = getRemoteUserIP();
-    const char * test = (const char *) &RemoteIP;
+    if (RemoteIP == 0)
+        printf("Something went wrong getting the RemoteIP");
+    const char * p_RemoteIP = (const char *) &RemoteIP;
 
-    struct sockaddr_in servAddr;
-    servAddr.sin_addr.s_addr = inet_addr(test);
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(4444);
+    struct sockaddr_in remoteAddr;
+    remoteAddr.sin_addr.s_addr = inet_addr(p_RemoteIP);
+    remoteAddr.sin_family = AF_INET;
+    remoteAddr.sin_port = htons(4444);
     printf("Done");
     Sleep(5000);
 
-    int connectStatus = connect(sockD, (struct sockaddr*)&servAddr, sizeof(servAddr));
+    int connectStatus = connect(sockD, (struct sockaddr*)&remoteAddr, sizeof(remoteAddr));
     if (connectStatus == -1) {
         printf("Error...\n");
     }
